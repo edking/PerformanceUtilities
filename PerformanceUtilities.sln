@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceUtilities", "PerformanceUtilities\PerformanceUtilities.csproj", "{8D56F483-E901-477D-8388-E9735D19444C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LinqExamples", "LinqExamples\LinqExamples.csproj", "{FBCB6DBF-F97A-4F03-A52A-89C70B8852A8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FFAD849F-DDFF-4FF5-9548-E61083092B22}"
+	ProjectSection(SolutionItems) = preProject
+		Local.testsettings = Local.testsettings
+		PerformanceUtilities.vsmdi = PerformanceUtilities.vsmdi
+		PerformanceUtilities1.vsmdi = PerformanceUtilities1.vsmdi
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Comparisons", "Comparisons\Comparisons.csproj", "{E7DF662D-D9D8-4368-8E85-25D6E3126A64}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrimesComparison", "PrimesComparison\PrimesComparison.csproj", "{CE4313F8-5FEE-4116-A8A5-7E8791CB371F}"
+EndProject
+Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = PerformanceUtilities1.vsmdi
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8D56F483-E901-477D-8388-E9735D19444C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D56F483-E901-477D-8388-E9735D19444C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D56F483-E901-477D-8388-E9735D19444C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D56F483-E901-477D-8388-E9735D19444C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBCB6DBF-F97A-4F03-A52A-89C70B8852A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBCB6DBF-F97A-4F03-A52A-89C70B8852A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBCB6DBF-F97A-4F03-A52A-89C70B8852A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBCB6DBF-F97A-4F03-A52A-89C70B8852A8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7DF662D-D9D8-4368-8E85-25D6E3126A64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7DF662D-D9D8-4368-8E85-25D6E3126A64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7DF662D-D9D8-4368-8E85-25D6E3126A64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7DF662D-D9D8-4368-8E85-25D6E3126A64}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE4313F8-5FEE-4116-A8A5-7E8791CB371F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE4313F8-5FEE-4116-A8A5-7E8791CB371F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE4313F8-5FEE-4116-A8A5-7E8791CB371F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE4313F8-5FEE-4116-A8A5-7E8791CB371F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
