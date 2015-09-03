@@ -42,14 +42,6 @@ namespace Comparisons
             InitStringData(cSmallTableSize);
 
             RunStringTests();
-
-            var comparison = new TwoSampleZTest(_dictResult.DescriptiveResult, _tableResult.DescriptiveResult, 0.0,
-                TwoSampleHypothesis.FirstValueIsSmallerThanSecond);
-
-            Console.WriteLine(_dictResult.ToString());
-            Console.WriteLine(_tableResult.ToString());
-
-            Assert.IsTrue(comparison.Significant);
         }
 
         [TestMethod]
@@ -59,14 +51,6 @@ namespace Comparisons
             InitStringData(cMediumTableSize);
 
             RunStringTests();
-
-            var comparison = new TwoSampleZTest(_dictResult.DescriptiveResult, _tableResult.DescriptiveResult, 0.0,
-                TwoSampleHypothesis.FirstValueIsSmallerThanSecond);
-
-            Console.WriteLine(_dictResult.ToString());
-            Console.WriteLine(_tableResult.ToString());
-
-            Assert.IsTrue(comparison.Significant);
         }
 
         [TestMethod]
@@ -76,14 +60,6 @@ namespace Comparisons
             InitStringData(cLargeTableSize);
 
             RunStringTests();
-
-            var comparison = new TwoSampleZTest(_dictResult.DescriptiveResult, _tableResult.DescriptiveResult, 0.0,
-                TwoSampleHypothesis.FirstValueIsSmallerThanSecond);
-
-            Console.WriteLine(_dictResult.ToString());
-            Console.WriteLine(_tableResult.ToString());
-
-            Assert.IsTrue(comparison.Significant);
         }
 
         [TestMethod]
@@ -93,14 +69,6 @@ namespace Comparisons
             InitStringData(cXLargeTableSize);
 
             RunStringTests();
-
-            var comparison = new TwoSampleZTest(_dictResult.DescriptiveResult, _tableResult.DescriptiveResult, 0.0,
-                TwoSampleHypothesis.FirstValueIsSmallerThanSecond);
-
-            Console.WriteLine(_dictResult.ToString());
-            Console.WriteLine(_tableResult.ToString());
-
-            Assert.IsTrue(comparison.Significant);
         }
 
         [TestMethod]
@@ -110,14 +78,6 @@ namespace Comparisons
             InitIntData(cSmallTableSize);
 
             RunIntTests();
-
-            var comparison = new TwoSampleZTest(_dictResult.DescriptiveResult, _tableResult.DescriptiveResult, 0.0,
-                TwoSampleHypothesis.FirstValueIsSmallerThanSecond);
-
-            Console.WriteLine(_dictResult.ToString());
-            Console.WriteLine(_tableResult.ToString());
-
-            Assert.IsTrue(comparison.Significant);
         }
 
         [TestMethod]
@@ -127,14 +87,6 @@ namespace Comparisons
             InitIntData(cMediumTableSize);
 
             RunIntTests();
-
-            var comparison = new TwoSampleZTest(_dictResult.DescriptiveResult, _tableResult.DescriptiveResult, 0.0,
-                TwoSampleHypothesis.FirstValueIsSmallerThanSecond);
-
-            Console.WriteLine(_dictResult.ToString());
-            Console.WriteLine(_tableResult.ToString());
-
-            Assert.IsTrue(comparison.Significant);
         }
 
         [TestMethod]
@@ -144,14 +96,6 @@ namespace Comparisons
             InitIntData(cLargeTableSize);
 
             RunIntTests();
-
-            var comparison = new TwoSampleZTest(_dictResult.DescriptiveResult, _tableResult.DescriptiveResult, 0.0,
-                TwoSampleHypothesis.FirstValueIsSmallerThanSecond);
-
-            Console.WriteLine(_dictResult.ToString());
-            Console.WriteLine(_tableResult.ToString());
-
-            Assert.IsTrue(comparison.Significant);
         }
 
         [TestMethod]
@@ -161,14 +105,6 @@ namespace Comparisons
             InitIntData(cXLargeTableSize);
 
             RunIntTests();
-
-            var comparison = new TwoSampleZTest(_dictResult.DescriptiveResult, _tableResult.DescriptiveResult, 0.0,
-                TwoSampleHypothesis.FirstValueIsSmallerThanSecond);
-
-            Console.WriteLine(_dictResult.ToString());
-            Console.WriteLine(_tableResult.ToString());
-
-            Assert.IsTrue(comparison.Significant);
         }
 
         [TestMethod]
@@ -178,36 +114,20 @@ namespace Comparisons
             InitSIData(cXLargeTableSize);
 
             RunSITests();
-
-            var comparison = new TwoSampleZTest(_dictResult.DescriptiveResult, _tableResult.DescriptiveResult, 0.0,
-                TwoSampleHypothesis.ValuesAreDifferent);
-
-            Console.WriteLine(_dictResult.ToString());
-            Console.WriteLine(_tableResult.ToString());
-
-            // Interesting view of "significant" here.  A test with this many runs is almost always significant
-            // statistically.  But another read of "significant" is that sometimes this shows as a significant diff
-            // and sometimes not.  Depends on the run.
-            Assert.IsFalse(comparison.Significant);
         }
 
         private void RunSITests()
         {
-            _dictResult = PerformancePatterns.RunPerformanceTest(cMinPerfIterations,
-                (() =>
+            bool significant = PerformancePatterns.RunPerformanceComparison(cMinPerfIterations,
+                "datatable with int keys", (() =>
                 {
                     var ndx = _intKeys[_rng.Next(0, _intKeys.Count)];
                     string desc;
 
                     DataRow[] rows = _intDataTable.Select(String.Format("codeColumn = {0}", ndx));
                     if (rows.Length > 0) desc = rows[0]["valueColumn"].ToString();
-                }));
-            Console.WriteLine(cResultFormat + " with int-keyed DataTable.", cMinPerfIterations,
-                _dictResult.TotalMilliseconds,
-                _dictResult.TotalSeconds);
-
-            _tableResult = PerformancePatterns.RunPerformanceTest(cMinPerfIterations,
-                (() =>
+                }),
+                "datatable with string keys", (() =>
                 {
                     var ndx = _stringKeys[_rng.Next(0, _stringKeys.Count)];
 
@@ -215,25 +135,21 @@ namespace Comparisons
 
                     DataRow[] rows = _stringDataTable.Select("codeColumn = '" + ndx + "'");
                     if (rows.Length > 0) desc = rows[0]["valueColumn"].ToString();
-                }));
-            Console.WriteLine(cResultFormat + " with string-keyed DataTable.", cMinPerfIterations,
-                _tableResult.TotalMilliseconds,
-                _tableResult.TotalSeconds);
+                }),
+                100.0, TwoSampleHypothesis.ValuesAreDifferent, true);
+            Assert.IsTrue(significant);
         }
 
         private void RunStringTests()
         {
-            _dictResult = PerformancePatterns.RunPerformanceTest(cMinPerfIterations,
-                (() =>
+            bool significant = PerformancePatterns.RunPerformanceComparison(cMinPerfIterations,
+                "dictionary with string keys", (() =>
                 {
                     var ndx = _stringKeys[_rng.Next(0, _stringKeys.Count)];
                     string desc;
                     _dictionary.TryGetValue(ndx, out desc);
-                }));
-            Console.WriteLine(cResultFormat + " with dictionary.", cMinPerfIterations, _dictResult.TotalMilliseconds,
-                _dictResult.TotalSeconds);
-            _tableResult = PerformancePatterns.RunPerformanceTest(cMinPerfIterations,
-                (() =>
+                }),
+                "datatable with string keys", (() =>
                 {
                     var ndx = _stringKeys[_rng.Next(0, _stringKeys.Count)];
 
@@ -241,34 +157,30 @@ namespace Comparisons
 
                     DataRow[] rows = _stringDataTable.Select("codeColumn = '" + ndx + "'");
                     if (rows.Length > 0) desc = rows[0]["valueColumn"].ToString();
-                }));
-            Console.WriteLine(cResultFormat + " with DataTable.", cMinPerfIterations, _tableResult.TotalMilliseconds,
-                _tableResult.TotalSeconds);
+                }),
+                00.0, TwoSampleHypothesis.FirstValueIsSmallerThanSecond, true);
+            Assert.IsTrue(significant);
         }
 
         private void RunIntTests()
         {
-            _dictResult = PerformancePatterns.RunPerformanceTest(cMinPerfIterations,
-                (() =>
+            bool significant = PerformancePatterns.RunPerformanceComparison(cMinPerfIterations,
+                "dictionary with int keys", (() =>
                 {
                     var ndx = _intKeys[_rng.Next(0, _intKeys.Count)];
                     string desc;
                     _intDictionary.TryGetValue(ndx, out desc);
-                }));
-            Console.WriteLine(cResultFormat + " with dictionary.", cMinPerfIterations, _dictResult.TotalMilliseconds,
-                _dictResult.TotalSeconds);
-
-            _tableResult = PerformancePatterns.RunPerformanceTest(cMinPerfIterations,
-                (() =>
+                }),
+                "datatable with int keys", (() =>
                 {
                     var ndx = _intKeys[_rng.Next(0, _intKeys.Count)];
                     string desc;
 
                     DataRow[] rows = _intDataTable.Select(String.Format("codeColumn = {0}", ndx));
                     if (rows.Length > 0) desc = rows[0]["valueColumn"].ToString();
-                }));
-            Console.WriteLine(cResultFormat + " with DataTable.", cMinPerfIterations, _tableResult.TotalMilliseconds,
-                _tableResult.TotalSeconds);
+                }),
+                00.0, TwoSampleHypothesis.FirstValueIsSmallerThanSecond, true);
+            Assert.IsTrue(significant);
         }
 
         private void InitSIData(int numEntries)

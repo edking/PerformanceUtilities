@@ -50,10 +50,13 @@
     <Compile Include="Analysis\Distributions\Functions\Special.cs" />
     <Compile Include="Analysis\Distributions\NormalDistribution.cs" />
     <Compile Include="Analysis\Distributions\TDistribution.cs" />
+    <Compile Include="Analysis\StatisticalTests\GeneralHypothesisTest.cs" />
     <Compile Include="Analysis\StatisticalTests\HypothesisTest.cs" />
     <Compile Include="Analysis\StatisticalTests\HypothesisTypes.cs" />
+    <Compile Include="Analysis\StatisticalTests\IHypothesisTest.cs" />
     <Compile Include="Analysis\StatisticalTests\TwoSampleTTest.cs" />
     <Compile Include="Analysis\StatisticalTests\TwoSampleZTest.cs" />
+    <Compile Include="MSExtensions\ThreadSafeRandom.cs" />
     <Compile Include="ResultTypes\Bucket.cs" />
     <Compile Include="ResultTypes\DescriptiveResult.cs" />
     <Compile Include="TestPatterns\HiResTimer.cs" />
@@ -64,6 +67,7 @@
     <Compile Include="ResultTypes\ReliabilityResult.cs" />
     <Compile Include="ResultTypes\ResultFormat.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

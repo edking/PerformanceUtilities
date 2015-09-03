@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using PerformanceUtilities.Analysis;
+using PerformanceUtilities.Analysis.StatisticalTests;
 using PerformanceUtilities.ResultTypes;
 
 namespace PerformanceUtilities.TestPatterns
@@ -10,6 +11,68 @@ namespace PerformanceUtilities.TestPatterns
     public static class PerformancePatterns
     {
         public const int cHistogramBuckets = 20;
+
+        public static bool RunPerformanceComparison(int numIterations, Action firstOperation, Action secondOperation,
+            double hypothesizedDifference = 0, TwoSampleHypothesis hypothesis = TwoSampleHypothesis.ValuesAreDifferent,
+            bool outputDetails = false)
+        {
+            return RunPerformanceComparison(numIterations, "first", firstOperation, "second", secondOperation,
+                hypothesizedDifference, hypothesis, outputDetails);
+        }
+
+        public static bool RunConcurrentPerformanceComparison(int numIterations, int degreeParallelism,
+            Action firstOperation, Action secondOperation, double hypothesizedDifference = 0,
+            TwoSampleHypothesis hypothesis = TwoSampleHypothesis.ValuesAreDifferent, bool outputDetails = false)
+        {
+            return RunConcurrentPerformanceComparison(numIterations, degreeParallelism, "first", firstOperation,
+                "second", secondOperation, hypothesizedDifference, hypothesis, outputDetails);
+        }
+
+        public static bool RunPerformanceComparison(int numIterations, string firstLabel, Action firstOperation,
+            string secondLabel, Action secondOperation,
+            double hypothesizedDifference = 0, TwoSampleHypothesis hypothesis = TwoSampleHypothesis.ValuesAreDifferent,
+            bool outputDetails = false)
+        {
+            var result1 = RunPerformanceTest(numIterations, firstOperation);
+            var result2 = RunPerformanceTest(numIterations, secondOperation);
+            var comparison = new GeneralHypothesisTest(firstLabel, result1.DescriptiveResult, secondLabel,
+                result2.DescriptiveResult,
+                hypothesizedDifference, hypothesis);
+
+            if (outputDetails)
+            {
+                Console.WriteLine(comparison.ToString());
+                Console.WriteLine("-----------------------------{0}--------------------------------------", firstLabel);
+                Console.WriteLine(result1.ToString());
+                Console.WriteLine("-----------------------------{0}--------------------------------------", secondLabel);
+                Console.WriteLine(result2.ToString());
+            }
+
+            return comparison.Significant;
+        }
+
+        public static bool RunConcurrentPerformanceComparison(int numIterations, int degreeParallelism,
+            string firstLabel,
+            Action firstOperation, string secondLabel, Action secondOperation, double hypothesizedDifference = 0,
+            TwoSampleHypothesis hypothesis = TwoSampleHypothesis.ValuesAreDifferent, bool outputDetails = false)
+        {
+            var result1 = RunConcurrentPerformanceTest(numIterations, degreeParallelism, firstOperation);
+            var result2 = RunConcurrentPerformanceTest(numIterations, degreeParallelism, secondOperation);
+            var comparison = new GeneralHypothesisTest(firstLabel, result1.DescriptiveResult, secondLabel,
+                result2.DescriptiveResult,
+                hypothesizedDifference, hypothesis);
+
+            if (outputDetails)
+            {
+                Console.WriteLine(comparison.ToString());
+                Console.WriteLine("-----------------------------{0}--------------------------------------", firstLabel);
+                Console.WriteLine(result1.ToString());
+                Console.WriteLine("-----------------------------{0}--------------------------------------", secondLabel);
+                Console.WriteLine(result2.ToString());
+            }
+
+            return comparison.Significant;
+        }
 
         public static PerformanceResult RunConcurrentPerformanceTest(int numIterations, int degreeParallelism,
             Action operation)
