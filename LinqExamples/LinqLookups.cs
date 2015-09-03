@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PerformanceUtilities.Analysis.StatisticalTests;
-using PerformanceUtilities.ResultTypes;
+using PerformanceUtilities.MSExtensions;
 using PerformanceUtilities.TestPatterns;
 
 namespace LinqExamples
@@ -14,47 +14,46 @@ namespace LinqExamples
         // Rule: need lots of data -- size like prod will see it
         private const int cMaxList = (1 << 9);
 
-        private const int cDegreeConcurrency = 4;
-
         // Rule: do it a lot of times to smooth out the rough edges
         private const int cMinPerfIterations = 10000;
 
-        private readonly Random _rng = new Random();
-        private const string cResultFormat = "{0:N0} iterations took {1:n2} ms ({2:n3} seconds)";
+        private const string catLabels = "ABCDEFGHIJ0123456789";
+        private const int catLength = 2;
+        private const int maxCategories = 10;
+        private readonly ThreadSafeRandom _rng = new ThreadSafeRandom();
+        private int _basePayId = 1000000;
         private List<PayRecord> _bigList;
+        private List<string> _categories;
 
         private ILookup<int, PayRecord> _myLookup;
+        private int _uniquePayIds = 300;
 
         [TestInitialize]
         [TestCategory("Performance")]
         public void TestSetup()
         {
+            _categories = new List<string>();
+            while (_categories.Count < maxCategories)
+            {
+                string cat = String.Empty;
+                for (int i = 0; i < catLength; i++)
+                {
+                    int c = _rng.Next(1, catLabels.Length);
+                    cat = cat + catLabels[c];
+                }
+                if (!_categories.Contains(cat)) _categories.Add(cat);
+            }
+
             _bigList = new List<PayRecord>(cMaxList);
             for (int i = 0; i < cMaxList; i++)
             {
-                string cv = "++";
-
-                switch (_rng.Next(1, 4))
-                {
-                    case 1:
-                        cv = "AB";
-                        break;
-                    case 2:
-                        cv = "CD";
-                        break;
-                    case 3:
-                        cv = "XY";
-                        break;
-                    case 4:
-                        cv = "**";
-                        break;
-                }
+                string cv = _categories[_rng.Next(0, _categories.Count - 1)];
 
                 var pr = new PayRecord
                 {
-                    PayId = _rng.Next(1000000, 1000300),
+                    PayId = _rng.Next(_basePayId, _basePayId + _uniquePayIds),
                     PaymentAmount = Convert.ToDecimal(_rng.Next(1, 10000))/100M,
-                    CategoryCode = cv
+                    Category = cv
                 };
 
                 _bigList.Add(pr);
@@ -62,203 +61,121 @@ namespace LinqExamples
             _myLookup = _bigList.ToLookup(p => p.PayId, p => p);
         }
 
-        public void PrintResult(PerformanceResult res)
-        {
-            Console.WriteLine(res.ToString());
-        }
-
         [TestMethod]
         [TestCategory("Performance")]
-        public void WithLookup()
+        public void CompareWithAndWithoutLookup()
         {
-            PerformanceResult result = PerformancePatterns.RunPerformanceTest(cMinPerfIterations,
-                (() => FuncWithLookup()));
-
-            Console.WriteLine(cResultFormat + " with lookup.", cMinPerfIterations, result.TotalMilliseconds,
-                result.TotalSeconds);
-
-            PrintResult(result);
-        }
-
-        [TestMethod]
-        [TestCategory("Performance")]
-        public void CompareMethods()
-        {
-            PerformanceResult resultWith = PerformancePatterns.RunPerformanceTest(cMinPerfIterations,
-                (() => FuncWithLookup()));
-
-            Console.WriteLine(cResultFormat + " with lookup.", cMinPerfIterations, resultWith.TotalMilliseconds,
-                resultWith.TotalSeconds);
-
-            PerformanceResult resultWithout = PerformancePatterns.RunPerformanceTest(cMinPerfIterations,
-                (() =>
+            bool significant = PerformancePatterns.RunPerformanceComparison(cMinPerfIterations,
+                "serial with lookup", (() =>
                 {
-                    var payids = (from payment in _bigList
-                                  select payment.PayId).Distinct();
+                    _myLookup = _bigList.ToLookup(p => p.PayId, p => p);
 
-                    var myStuff = (from payid in payids.AsParallel()
-                                   select new
-                                   {
-                                       PayId = payid,
-                                       coverages =
-                                           string.Join(", ", _bigList.Where(x => x.PayId == payid).Select(x => x.CategoryCode)),
-                                       total = _bigList.Where(x => x.PayId == payid).Select(x => x.PaymentAmount).Sum()
-                                   }).ToList();
+                    var payids = _myLookup.Select(g => g.Key);
 
-                    var myList = myStuff.ToList();
-
-                }));
-
-            Console.WriteLine(cResultFormat + " without lookup.", cMinPerfIterations, resultWithout.TotalMilliseconds,
-                resultWithout.TotalSeconds);
-
-            var comparison = new TwoSampleZTest(resultWith.DescriptiveResult, resultWithout.DescriptiveResult, 0.0, TwoSampleHypothesis.FirstValueIsSmallerThanSecond);
-
-            Assert.IsTrue(comparison.Significant);
-
-        }
-
-        
-        
-        [TestMethod]
-        [TestCategory("Performance")]
-        public void WithConcurrentLookup()
-        {
-            PerformanceResult result = PerformancePatterns.RunConcurrentPerformanceTest(cMinPerfIterations,
-                cDegreeConcurrency,
-                (Action) (FuncWithLookup));
-
-            Console.WriteLine(cResultFormat + " CONCURRENT={3} with lookup.", cMinPerfIterations, result.TotalMilliseconds,
-                result.TotalSeconds, cDegreeConcurrency);
-
-            PrintResult(result);
-        }
-
-
-        [TestMethod]
-        [TestCategory("Performance")]
-        public void WithoutLookupParallel()
-        {
-            PerformanceResult result = PerformancePatterns.RunPerformanceTest(cMinPerfIterations,
-                (() =>
-                {
-                    var payids = (from payment in _bigList
-                                  select payment.PayId).Distinct();
-
-                    var myStuff = (from payid in payids.AsParallel()
-                                  select new
-                                  {
-                                      PayId = payid,
-                                      coverages =
-                                          string.Join(", ", _bigList.Where(x => x.PayId == payid).Select(x => x.CategoryCode)),
-                                      total = _bigList.Where(x => x.PayId == payid).Select(x => x.PaymentAmount).Sum()
-                                  }).ToList();
-
-                    var myList = myStuff.ToList();
-
-                }));
-
-            Console.WriteLine(cResultFormat + " with lookup.", cMinPerfIterations, result.TotalMilliseconds,
-                result.TotalSeconds);
-            PrintResult(result);
-        }
-
-        [TestMethod]
-        [TestCategory("Performance")]
-        public void WithPreLookup()
-        {
-            PerformanceResult result = PerformancePatterns.RunPerformanceTest(cMinPerfIterations,
-                (() =>
-                {
-                    var payids = (from payment in _bigList
-                                  select payment.PayId).Distinct();
-
-                    var myStuff = from payid in payids
-                                  select new
-                                  {
-                                      PayId = payid,
-                                      coverages = string.Join(",", _myLookup[payid].Select(x => x.CategoryCode)),
-                                      total = _myLookup[payid].Select(x => x.PaymentAmount).Sum()
-                                  };
-
-                    var myList = myStuff.ToList();
-
-                }));
-
-            Console.WriteLine(cResultFormat + " with pre-lookup.", cMinPerfIterations, result.TotalMilliseconds,
-                result.TotalSeconds);
-            PrintResult(result);
-        }
-
-        [TestMethod]
-        [TestCategory("Performance")]
-        public void WithoutLookup()
-        {
-            PerformanceResult result = PerformancePatterns.RunPerformanceTest(cMinPerfIterations,
-                (() =>
+                    var myStuff = (from payid in payids
+                        select new
+                        {
+                            PayId = payid,
+                            coverages = string.Join(",", _myLookup[payid].Select(x => x.Category).Distinct()),
+                            total = _myLookup[payid].Select(x => x.PaymentAmount).Sum()
+                        }).ToList();
+                }),
+                "serial without lookup", (() =>
                 {
                     var payids = (from payment in _bigList
                         select payment.PayId).Distinct();
 
-                    var myStuff = from payid in payids
+                    var myStuff = (from payid in payids
                         select new
                         {
                             PayId = payid,
                             coverages =
-                                string.Join(", ", _bigList.Where(x => x.PayId == payid).Select(x => x.CategoryCode)),
+                                string.Join(", ",
+                                    _bigList.Where(x => x.PayId == payid).Select(x => x.Category).Distinct()),
                             total = _bigList.Where(x => x.PayId == payid).Select(x => x.PaymentAmount).Sum()
-                        };
+                        }).ToList();
+                }),
+                0.0, TwoSampleHypothesis.FirstValueIsSmallerThanSecond, true);
 
-                    var myList = myStuff.ToList();
-
-                }));
-
-            Console.WriteLine(cResultFormat + " without lookup.", cMinPerfIterations, result.TotalMilliseconds,
-                result.TotalSeconds);
-            PrintResult(result);
+            Assert.IsTrue(significant);
         }
 
         [TestMethod]
         [TestCategory("Performance")]
-        public void WithoutLookupWithoutEnumeration()
+        public void CompareConcurrentWithAndWithoutLookups()
         {
-            PerformanceResult result = PerformancePatterns.RunPerformanceTest(cMinPerfIterations,
+            bool significant = PerformancePatterns.RunPerformanceComparison(cMinPerfIterations, "parallel with Lookup",
                 (() =>
                 {
+                    _myLookup = _bigList.ToLookup(p => p.PayId, p => p);
+
+                    var payids = _myLookup.Select(g => g.Key);
+
+                    var myStuff = (from payid in payids.AsParallel()
+                        select new
+                        {
+                            PayId = payid,
+                            coverages = string.Join(",", _myLookup[payid].Select(x => x.Category).Distinct()),
+                            total = _myLookup[payid].Select(x => x.PaymentAmount).Sum()
+                        }).ToList();
+                }),
+                "parallel without Lookup", (() =>
+                {
                     var payids = (from payment in _bigList
-                                  select payment.PayId).Distinct();
+                        select payment.PayId).Distinct();
 
-                    var myStuff = from payid in payids
-                                  select new
-                                  {
-                                      PayId = payid,
-                                      coverages =
-                                          string.Join(", ", _bigList.Where(x => x.PayId == payid).Select(x => x.CategoryCode)),
-                                      total = _bigList.Where(x => x.PayId == payid).Select(x => x.PaymentAmount).Sum()
-                                  };
-                }));
+                    var myStuff = (from payid in payids.AsParallel()
+                        select new
+                        {
+                            PayId = payid,
+                            coverages =
+                                string.Join(", ",
+                                    _bigList.Where(x => x.PayId == payid).Select(x => x.Category).Distinct()),
+                            total = _bigList.Where(x => x.PayId == payid).Select(x => x.PaymentAmount).Sum()
+                        }).ToList();
+                }),
+                0.0, TwoSampleHypothesis.FirstValueIsSmallerThanSecond, true);
 
-            Console.WriteLine(cResultFormat + " without lookup.", cMinPerfIterations, result.TotalMilliseconds,
-                result.TotalSeconds);
-            PrintResult(result);
+            Assert.IsTrue(significant);
         }
 
-        public void FuncWithLookup()
+        [TestMethod]
+        [TestCategory("Performance")]
+        public void CompareConcurrentVsLookups()
         {
-            _myLookup = _bigList.ToLookup(p => p.PayId, p => p);
-
-            var payids = _myLookup.Select(g => g.Key);
-
-           var myStuff = from payid in payids
-                select new 
+            bool significant = PerformancePatterns.RunPerformanceComparison(cMinPerfIterations,
+                "serial with lookup", (() =>
                 {
-                    PayId = payid,
-                    coverages = string.Join(",", _myLookup[payid].Select(x => x.CategoryCode)),
-                    total = _myLookup[payid].Select(x => x.PaymentAmount).Sum()
-                };
+                    _myLookup = _bigList.ToLookup(p => p.PayId, p => p);
 
-            var myList = myStuff.ToList();
+                    var payids = _myLookup.Select(g => g.Key);
 
+                    var myStuff = (from payid in payids
+                        select new
+                        {
+                            PayId = payid,
+                            coverages = string.Join(",", _myLookup[payid].Select(x => x.Category).Distinct()),
+                            total = _myLookup[payid].Select(x => x.PaymentAmount).Sum()
+                        }).ToList();
+                }),
+                "parallel without lookup", (() =>
+                {
+                    var payids = (from payment in _bigList
+                        select payment.PayId).Distinct();
+
+                    var myStuff = (from payid in payids.AsParallel()
+                        select new
+                        {
+                            PayId = payid,
+                            coverages =
+                                string.Join(", ",
+                                    _bigList.Where(x => x.PayId == payid).Select(x => x.Category).Distinct()),
+                            total = _bigList.Where(x => x.PayId == payid).Select(x => x.PaymentAmount).Sum()
+                        }).ToList();
+                }),
+                0.0, TwoSampleHypothesis.FirstValueIsSmallerThanSecond, true);
+
+            Assert.IsTrue(significant);
         }
     }
 }

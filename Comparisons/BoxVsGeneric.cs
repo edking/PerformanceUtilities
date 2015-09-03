@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PerformanceUtilities.Analysis.StatisticalTests;
-using PerformanceUtilities.ResultTypes;
 using PerformanceUtilities.TestPatterns;
 
 namespace Comparisons
@@ -11,17 +10,16 @@ namespace Comparisons
     public class BoxVsGeneric
     {
         private const int cMinPerfIterations = 100000;
-        private const string cResultFormat = "{0:N0} iterations took {1:n2} ms ({2:n3} seconds)";
         private readonly List<object> _boxList = new List<object>();
 
         private readonly List<int> _noboxList = new List<int>();
         private readonly Random _rng = new Random();
 
         [TestMethod]
-        public void TestMethod1()
+        public void BoxedListVsGenericList()
         {
-            PerformanceResult boxResult = PerformancePatterns.RunPerformanceTest(cMinPerfIterations,
-                (() =>
+            bool significant = PerformancePatterns.RunPerformanceComparison(cMinPerfIterations,
+                "List<object>", (() =>
                 {
                     if (_boxList.Count < (cMinPerfIterations >> 2))
                     {
@@ -33,13 +31,8 @@ namespace Comparisons
                         var r = (int) _boxList[i];
                         _boxList.RemoveAt(i);
                     }
-                }));
-
-            Console.WriteLine(cResultFormat + " with boxing.", cMinPerfIterations, boxResult.TotalMilliseconds,
-                boxResult.TotalSeconds);
-
-            PerformanceResult noboxResult = PerformancePatterns.RunPerformanceTest(cMinPerfIterations,
-                (() =>
+                }),
+                "List<int>", (() =>
                 {
                     if (_noboxList.Count < (cMinPerfIterations >> 2))
                     {
@@ -51,18 +44,10 @@ namespace Comparisons
                         int r = _noboxList[i];
                         _noboxList.RemoveAt(i);
                     }
-                }));
+                }),
+                0.0, TwoSampleHypothesis.ValuesAreDifferent, true);
 
-            Console.WriteLine(cResultFormat + " with generic collection.", cMinPerfIterations,
-                noboxResult.TotalMilliseconds, noboxResult.TotalSeconds);
-
-            var comparison = new TwoSampleZTest(noboxResult.DescriptiveResult, boxResult.DescriptiveResult, 0.0,
-                TwoSampleHypothesis.FirstValueIsSmallerThanSecond);
-
-            Console.WriteLine(noboxResult.ToString());
-            Console.WriteLine(boxResult.ToString());
-
-            Assert.IsTrue(comparison.Significant);
+            Assert.IsTrue(significant);
         }
     }
 }
