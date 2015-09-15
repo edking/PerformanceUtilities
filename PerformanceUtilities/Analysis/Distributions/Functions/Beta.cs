@@ -1,40 +1,41 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace PerformanceUtilities.Analysis.Distributions
 {
     /// <summary>
-    ///   Beta functions.
+    ///     Beta functions.
     /// </summary>
-    /// 
     /// <remarks>
-    /// <para>
-    ///   This class offers implementations for the many Beta functions,
-    ///   such as the <see cref="Function">Beta function itself</see>, 
-    ///   <see cref="Log">its logarithm</see>, the <see cref="Incomplete"/>
-    ///   incomplete regularized functions and others</para>
-    ///   
-    /// <para>
-    ///   The beta function was studied by Euler and Legendre and was given
-    ///   its name by Jacques Binet; its symbol Β is a Greek capital β rather
-    ///   than the similar Latin capital B.</para>
-    ///   
-    /// <para>
-    ///   References:
-    ///   <list type="bullet">
-    ///     <item><description>
-    ///       Cephes Math Library, http://www.netlib.org/cephes/ </description></item>
-    ///     <item><description>
-    ///       Wikipedia contributors, "Beta function,". Wikipedia, The Free 
-    ///       Encyclopedia. Available at: http://en.wikipedia.org/wiki/Beta_function 
-    ///       </description></item>
-    ///   </list></para>
+    ///     <para>
+    ///         This class offers implementations for the many Beta functions,
+    ///         such as the <see cref="Function">Beta function itself</see>,
+    ///         <see cref="Log">its logarithm</see>, the <see cref="Incomplete" />
+    ///         incomplete regularized functions and others
+    ///     </para>
+    ///     <para>
+    ///         The beta function was studied by Euler and Legendre and was given
+    ///         its name by Jacques Binet; its symbol Β is a Greek capital β rather
+    ///         than the similar Latin capital B.
+    ///     </para>
+    ///     <para>
+    ///         References:
+    ///         <list type="bullet">
+    ///             <item>
+    ///                 <description>
+    ///                     Cephes Math Library, http://www.netlib.org/cephes/
+    ///                 </description>
+    ///             </item>
+    ///             <item>
+    ///                 <description>
+    ///                     Wikipedia contributors, "Beta function,". Wikipedia, The Free
+    ///                     Encyclopedia. Available at: http://en.wikipedia.org/wiki/Beta_function
+    ///                 </description>
+    ///             </item>
+    ///         </list>
+    ///     </para>
     /// </remarks>
-    /// 
     /// <example>
-    /// <code>
+    ///     <code>
     ///   Beta.Function(4, 0.42);       // 1.2155480852832423
     ///   Beta.Log(4, 15.2);            // -9.46087817876467
     ///   Beta.Incbcf(4, 2, 4.2);       // -0.23046874999999992
@@ -46,44 +47,36 @@ namespace PerformanceUtilities.Analysis.Distributions
     ///   Beta.Multinomial(0.42, 0.5, 5.2 );     // 0.82641912952987062
     /// </code>
     /// </example>
-    /// 
     public static class Beta
     {
-
         /// <summary>
-        ///   Beta function as gamma(a) * gamma(b) / gamma(a+b).
+        ///     Beta function as gamma(a) * gamma(b) / gamma(a+b).
         /// </summary>
-        /// 
         /// <example>
-        ///   Please see <see cref="Beta"/>
+        ///     Please see <see cref="Beta" />
         /// </example>
-        /// 
         public static double Function(double a, double b)
         {
             return Math.Exp(Log(a, b));
         }
 
         /// <summary>
-        ///   Natural logarithm of the Beta function.
+        ///     Natural logarithm of the Beta function.
         /// </summary>
-        /// 
         /// <example>
-        ///   Please see <see cref="Beta"/>
+        ///     Please see <see cref="Beta" />
         /// </example>
-        /// 
         public static double Log(double a, double b)
         {
             return Gamma.Log(a) + Gamma.Log(b) - Gamma.Log(a + b);
         }
 
         /// <summary>
-        ///   Incomplete (regularized) Beta function Ix(a, b).
+        ///     Incomplete (regularized) Beta function Ix(a, b).
         /// </summary>
-        /// 
         /// <example>
-        ///   Please see <see cref="Beta"/>
+        ///     Please see <see cref="Beta" />
         /// </example>
-        /// 
         public static double Incomplete(double a, double b, double x)
         {
             double aa, bb, t, xx, xc, w, y;
@@ -102,7 +95,7 @@ namespace PerformanceUtilities.Analysis.Distributions
             }
 
             flag = false;
-            if ((b * x) <= 1.0 && x <= 0.95)
+            if ((b*x) <= 1.0 && x <= 0.95)
             {
                 t = PowerSeries(a, b, x);
                 return t;
@@ -110,7 +103,7 @@ namespace PerformanceUtilities.Analysis.Distributions
 
             w = 1.0 - x;
 
-            if (x > (a / (a + b)))
+            if (x > (a/(a + b)))
             {
                 flag = true;
                 aa = b;
@@ -126,7 +119,7 @@ namespace PerformanceUtilities.Analysis.Distributions
                 xx = x;
             }
 
-            if (flag && (bb * xx) <= 1.0 && xx <= 0.95)
+            if (flag && (bb*xx) <= 1.0 && xx <= 0.95)
             {
                 t = PowerSeries(aa, bb, xx);
                 if (t <= Constants.DoubleEpsilon) t = 1.0 - Constants.DoubleEpsilon;
@@ -134,22 +127,22 @@ namespace PerformanceUtilities.Analysis.Distributions
                 return t;
             }
 
-            y = xx * (aa + bb - 2.0) - (aa - 1.0);
+            y = xx*(aa + bb - 2.0) - (aa - 1.0);
             if (y < 0.0)
                 w = Incbcf(aa, bb, xx);
             else
-                w = Incbd(aa, bb, xx) / xc;
+                w = Incbd(aa, bb, xx)/xc;
 
 
-            y = aa * System.Math.Log(xx);
-            t = bb * System.Math.Log(xc);
-            if ((aa + bb) < Gamma.GammaMax && System.Math.Abs(y) < Constants.LogMax && System.Math.Abs(t) < Constants.LogMax)
+            y = aa*Math.Log(xx);
+            t = bb*Math.Log(xc);
+            if ((aa + bb) < Gamma.GammaMax && Math.Abs(y) < Constants.LogMax && Math.Abs(t) < Constants.LogMax)
             {
-                t = System.Math.Pow(xc, bb);
-                t *= System.Math.Pow(xx, aa);
+                t = Math.Pow(xc, bb);
+                t *= Math.Pow(xx, aa);
                 t /= aa;
                 t *= w;
-                t *= Gamma.Function(aa + bb) / (Gamma.Function(aa) * Gamma.Function(bb));
+                t *= Gamma.Function(aa + bb)/(Gamma.Function(aa)*Gamma.Function(bb));
                 if (flag)
                 {
                     if (t <= Constants.DoubleEpsilon) t = 1.0 - Constants.DoubleEpsilon;
@@ -159,11 +152,11 @@ namespace PerformanceUtilities.Analysis.Distributions
             }
 
             y += t + Gamma.Log(aa + bb) - Gamma.Log(aa) - Gamma.Log(bb);
-            y += System.Math.Log(w / aa);
+            y += Math.Log(w/aa);
             if (y < Constants.LogMin)
                 t = 0.0;
             else
-                t = System.Math.Exp(y);
+                t = Math.Exp(y);
 
             if (flag)
             {
@@ -174,13 +167,11 @@ namespace PerformanceUtilities.Analysis.Distributions
         }
 
         /// <summary>
-        ///   Continued fraction expansion #1 for incomplete beta integral.
+        ///     Continued fraction expansion #1 for incomplete beta integral.
         /// </summary>
-        /// 
         /// <example>
-        ///   Please see <see cref="Beta"/>
+        ///     Please see <see cref="Beta" />
         /// </example>
-        /// 
         public static double Incbcf(double a, double b, double x)
         {
             double xk, pk, pkm1, pkm2, qk, qkm1, qkm2;
@@ -206,30 +197,30 @@ namespace PerformanceUtilities.Analysis.Distributions
             ans = 1.0;
             r = 1.0;
             n = 0;
-            thresh = 3.0 * Constants.DoubleEpsilon;
+            thresh = 3.0*Constants.DoubleEpsilon;
 
             do
             {
-                xk = -(x * k1 * k2) / (k3 * k4);
-                pk = pkm1 + pkm2 * xk;
-                qk = qkm1 + qkm2 * xk;
+                xk = -(x*k1*k2)/(k3*k4);
+                pk = pkm1 + pkm2*xk;
+                qk = qkm1 + qkm2*xk;
                 pkm2 = pkm1;
                 pkm1 = pk;
                 qkm2 = qkm1;
                 qkm1 = qk;
 
-                xk = (x * k5 * k6) / (k7 * k8);
-                pk = pkm1 + pkm2 * xk;
-                qk = qkm1 + qkm2 * xk;
+                xk = (x*k5*k6)/(k7*k8);
+                pk = pkm1 + pkm2*xk;
+                qk = qkm1 + qkm2*xk;
                 pkm2 = pkm1;
                 pkm1 = pk;
                 qkm2 = qkm1;
                 qkm1 = qk;
 
-                if (qk != 0) r = pk / qk;
+                if (qk != 0) r = pk/qk;
                 if (r != 0)
                 {
-                    t = System.Math.Abs((ans - r) / r);
+                    t = Math.Abs((ans - r)/r);
                     ans = r;
                 }
                 else
@@ -246,14 +237,14 @@ namespace PerformanceUtilities.Analysis.Distributions
                 k7 += 2.0;
                 k8 += 2.0;
 
-                if ((System.Math.Abs(qk) + System.Math.Abs(pk)) > big)
+                if ((Math.Abs(qk) + Math.Abs(pk)) > big)
                 {
                     pkm2 *= biginv;
                     pkm1 *= biginv;
                     qkm2 *= biginv;
                     qkm1 *= biginv;
                 }
-                if ((System.Math.Abs(qk) < biginv) || (System.Math.Abs(pk) < biginv))
+                if ((Math.Abs(qk) < biginv) || (Math.Abs(pk) < biginv))
                 {
                     pkm2 *= big;
                     pkm1 *= big;
@@ -266,13 +257,11 @@ namespace PerformanceUtilities.Analysis.Distributions
         }
 
         /// <summary>
-        ///   Continued fraction expansion #2 for incomplete beta integral.
+        ///     Continued fraction expansion #2 for incomplete beta integral.
         /// </summary>
-        /// 
         /// <example>
-        ///   Please see <see cref="Beta"/>
+        ///     Please see <see cref="Beta" />
         /// </example>
-        /// 
         public static double Incbd(double a, double b, double x)
         {
             double xk, pk, pkm1, pkm2, qk, qkm1, qkm2;
@@ -296,33 +285,33 @@ namespace PerformanceUtilities.Analysis.Distributions
             qkm2 = 1.0;
             pkm1 = 1.0;
             qkm1 = 1.0;
-            z = x / (1.0 - x);
+            z = x/(1.0 - x);
             ans = 1.0;
             r = 1.0;
             n = 0;
-            thresh = 3.0 * Constants.DoubleEpsilon;
+            thresh = 3.0*Constants.DoubleEpsilon;
             do
             {
-                xk = -(z * k1 * k2) / (k3 * k4);
-                pk = pkm1 + pkm2 * xk;
-                qk = qkm1 + qkm2 * xk;
+                xk = -(z*k1*k2)/(k3*k4);
+                pk = pkm1 + pkm2*xk;
+                qk = qkm1 + qkm2*xk;
                 pkm2 = pkm1;
                 pkm1 = pk;
                 qkm2 = qkm1;
                 qkm1 = qk;
 
-                xk = (z * k5 * k6) / (k7 * k8);
-                pk = pkm1 + pkm2 * xk;
-                qk = qkm1 + qkm2 * xk;
+                xk = (z*k5*k6)/(k7*k8);
+                pk = pkm1 + pkm2*xk;
+                qk = qkm1 + qkm2*xk;
                 pkm2 = pkm1;
                 pkm1 = pk;
                 qkm2 = qkm1;
                 qkm1 = qk;
 
-                if (qk != 0) r = pk / qk;
+                if (qk != 0) r = pk/qk;
                 if (r != 0)
                 {
-                    t = System.Math.Abs((ans - r) / r);
+                    t = Math.Abs((ans - r)/r);
                     ans = r;
                 }
                 else
@@ -339,14 +328,14 @@ namespace PerformanceUtilities.Analysis.Distributions
                 k7 += 2.0;
                 k8 += 2.0;
 
-                if ((System.Math.Abs(qk) + System.Math.Abs(pk)) > big)
+                if ((Math.Abs(qk) + Math.Abs(pk)) > big)
                 {
                     pkm2 *= biginv;
                     pkm1 *= biginv;
                     qkm2 *= biginv;
                     qkm1 *= biginv;
                 }
-                if ((System.Math.Abs(qk) < biginv) || (System.Math.Abs(pk) < biginv))
+                if ((Math.Abs(qk) < biginv) || (Math.Abs(pk) < biginv))
                 {
                     pkm2 *= big;
                     pkm1 *= big;
@@ -359,13 +348,11 @@ namespace PerformanceUtilities.Analysis.Distributions
         }
 
         /// <summary>
-        ///   Inverse of incomplete beta integral.
+        ///     Inverse of incomplete beta integral.
         /// </summary>
-        /// 
         /// <example>
-        ///   Please see <see cref="Beta"/>
+        ///     Please see <see cref="Beta" />
         /// </example>
-        /// 
         public static double IncompleteInverse(double aa, double bb, double yy0)
         {
             double a, b, y0, d, y, x, x0, x1, lgm, yp, di, dithresh, yl, yh;
@@ -383,20 +370,17 @@ namespace PerformanceUtilities.Analysis.Distributions
             if (aa <= 1.0 || bb <= 1.0)
             {
                 nflg = true;
-                dithresh = 4.0 * Constants.DoubleEpsilon;
+                dithresh = 4.0*Constants.DoubleEpsilon;
                 rflg = false;
                 a = aa;
                 b = bb;
                 y0 = yy0;
-                x = a / (a + b);
+                x = a/(a + b);
                 y = Incomplete(a, b, x);
                 goto ihalve;
             }
-            else
-            {
-                nflg = false;
-                dithresh = 1.0e-4;
-            }
+            nflg = false;
+            dithresh = 1.0e-4;
 
             /* approximation to inverse function */
 
@@ -418,12 +402,12 @@ namespace PerformanceUtilities.Analysis.Distributions
                 y0 = yy0;
             }
 
-            lgm = (yp * yp - 3.0) / 6.0;
-            x0 = 2.0 / (1.0 / (2.0 * a - 1.0) + 1.0 / (2.0 * b - 1.0));
-            y = yp * Math.Sqrt(x0 + lgm) / x0
-                - (1.0 / (2.0 * b - 1.0) - 1.0 / (2.0 * a - 1.0))
-                * (lgm + 5.0 / 6.0 - 2.0 / (3.0 * x0));
-            y = 2.0 * y;
+            lgm = (yp*yp - 3.0)/6.0;
+            x0 = 2.0/(1.0/(2.0*a - 1.0) + 1.0/(2.0*b - 1.0));
+            y = yp*Math.Sqrt(x0 + lgm)/x0
+                - (1.0/(2.0*b - 1.0) - 1.0/(2.0*a - 1.0))
+                *(lgm + 5.0/6.0 - 2.0/(3.0*x0));
+            y = 2.0*y;
 
             if (y < Constants.LogMin)
             {
@@ -431,14 +415,14 @@ namespace PerformanceUtilities.Analysis.Distributions
                 throw new ArithmeticException("underflow");
             }
 
-            x = a / (a + b * Math.Exp(y));
+            x = a/(a + b*Math.Exp(y));
             y = Incomplete(a, b, x);
-            yp = (y - y0) / y0;
+            yp = (y - y0)/y0;
 
             if (Math.Abs(yp) < 1.0e-2)
                 goto newt;
 
-        ihalve:
+            ihalve:
 
             /* Resort to interval halving if not close enough */
             x0 = 0.0;
@@ -452,11 +436,11 @@ namespace PerformanceUtilities.Analysis.Distributions
             {
                 if (i != 0)
                 {
-                    x = x0 + di * (x1 - x0);
+                    x = x0 + di*(x1 - x0);
                     if (x == 1.0)
                         x = 1.0 - Constants.DoubleEpsilon;
                     y = Incomplete(a, b, x);
-                    yp = (x1 - x0) / (x1 + x0);
+                    yp = (x1 - x0)/(x1 + x0);
                     if (Math.Abs(yp) < dithresh)
                     {
                         x0 = x;
@@ -474,9 +458,9 @@ namespace PerformanceUtilities.Analysis.Distributions
                         di = 0.5;
                     }
                     else if (dir > 1)
-                        di = 0.5 * di + 0.5;
+                        di = 0.5*di + 0.5;
                     else
-                        di = (y0 - y) / (yh - yl);
+                        di = (y0 - y)/(yh - yl);
                     dir += 1;
                     if (x0 > 0.75)
                     {
@@ -514,9 +498,9 @@ namespace PerformanceUtilities.Analysis.Distributions
                         di = 0.5;
                     }
                     else if (dir < -1)
-                        di = 0.5 * di;
+                        di = 0.5*di;
                     else
-                        di = (y - y0) / (yh - yl);
+                        di = (y - y0)/(yh - yl);
                     dir -= 1;
                 }
             }
@@ -530,7 +514,7 @@ namespace PerformanceUtilities.Analysis.Distributions
             if (x == 0.0)
                 throw new ArithmeticException("underflow");
 
-        newt:
+            newt:
 
             if (nflg)
                 goto done;
@@ -545,7 +529,7 @@ namespace PerformanceUtilities.Analysis.Distributions
                     y = Incomplete(a, b, x0);
 
                 /* Compute the derivative of the function at this point. */
-                d = (a - 1.0) * Math.Log(x0) + (b - 1.0) * Math.Log(1.0 - x0) + lgm;
+                d = (a - 1.0)*Math.Log(x0) + (b - 1.0)*Math.Log(1.0 - x0) + lgm;
 
                 if (d < Constants.LogMin)
                     throw new ArithmeticException("underflow");
@@ -553,7 +537,7 @@ namespace PerformanceUtilities.Analysis.Distributions
                 d = Math.Exp(d);
 
                 /* compute the step to the next approximation of x */
-                d = (y - y0) / d;
+                d = (y - y0)/d;
                 x = x0;
                 x0 = x0 - d;
 
@@ -566,11 +550,11 @@ namespace PerformanceUtilities.Analysis.Distributions
                     goto done;
                 }
 
-                if (Math.Abs(d / x0) < 64.0 * Constants.DoubleEpsilon)
+                if (Math.Abs(d/x0) < 64.0*Constants.DoubleEpsilon)
                     goto done;
             }
 
-        done:
+            done:
             if (rflg)
             {
                 if (x0 <= Double.Epsilon)
@@ -582,60 +566,56 @@ namespace PerformanceUtilities.Analysis.Distributions
         }
 
         /// <summary>
-        ///   Power series for incomplete beta integral. Use when b*x
-        ///   is small and x not too close to 1.
+        ///     Power series for incomplete beta integral. Use when b*x
+        ///     is small and x not too close to 1.
         /// </summary>
-        /// 
         /// <example>
-        ///   Please see <see cref="Beta"/>
+        ///     Please see <see cref="Beta" />
         /// </example>
-        /// 
         public static double PowerSeries(double a, double b, double x)
         {
             double s, t, u, v, n, t1, z, ai;
 
-            ai = 1.0 / a;
-            u = (1.0 - b) * x;
-            v = u / (a + 1.0);
+            ai = 1.0/a;
+            u = (1.0 - b)*x;
+            v = u/(a + 1.0);
             t1 = v;
             t = u;
             n = 2.0;
             s = 0.0;
-            z = Constants.DoubleEpsilon * ai;
-            while (System.Math.Abs(v) > z)
+            z = Constants.DoubleEpsilon*ai;
+            while (Math.Abs(v) > z)
             {
-                u = (n - b) * x / n;
+                u = (n - b)*x/n;
                 t *= u;
-                v = t / (a + n);
+                v = t/(a + n);
                 s += v;
                 n += 1.0;
             }
             s += t1;
             s += ai;
 
-            u = a * System.Math.Log(x);
-            if ((a + b) < Gamma.GammaMax && System.Math.Abs(u) < Constants.LogMax)
+            u = a*Math.Log(x);
+            if ((a + b) < Gamma.GammaMax && Math.Abs(u) < Constants.LogMax)
             {
-                t = Gamma.Function(a + b) / (Gamma.Function(a) * Gamma.Function(b));
-                s = s * t * System.Math.Pow(x, a);
+                t = Gamma.Function(a + b)/(Gamma.Function(a)*Gamma.Function(b));
+                s = s*t*Math.Pow(x, a);
             }
             else
             {
-                t = Gamma.Log(a + b) - Gamma.Log(a) - Gamma.Log(b) + u + System.Math.Log(s);
+                t = Gamma.Log(a + b) - Gamma.Log(a) - Gamma.Log(b) + u + Math.Log(s);
                 if (t < Constants.LogMin) s = 0.0;
-                else s = System.Math.Exp(t);
+                else s = Math.Exp(t);
             }
             return s;
         }
 
         /// <summary>
-        ///   Multinomial Beta function.
+        ///     Multinomial Beta function.
         /// </summary>
-        /// 
         /// <example>
-        ///   Please see <see cref="Beta"/>
+        ///     Please see <see cref="Beta" />
         /// </example>
-        /// 
         public static double Multinomial(params double[] x)
         {
             double sum = 0;
@@ -647,7 +627,7 @@ namespace PerformanceUtilities.Analysis.Distributions
                 prd *= Gamma.Function(x[i]);
             }
 
-            return prd / Gamma.Function(sum);
+            return prd/Gamma.Function(sum);
         }
     }
 }

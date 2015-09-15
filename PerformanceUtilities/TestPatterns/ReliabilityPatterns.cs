@@ -36,11 +36,11 @@ namespace PerformanceUtilities.TestPatterns
             }
 
             var res = new ReliabilityResult
-            {
-                IsValid = valid,
-                Passed = passed,
-                Failed = failed
-            };
+                      {
+                          IsValid = valid,
+                          Passed = passed,
+                          Failed = failed
+                      };
 
             for (i = 0; i < degreeParallelism; i++) taskList[i].Dispose();
 

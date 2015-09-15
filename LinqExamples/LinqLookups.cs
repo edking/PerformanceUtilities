@@ -50,11 +50,11 @@ namespace LinqExamples
                 string cv = _categories[_rng.Next(0, _categories.Count - 1)];
 
                 var pr = new PayRecord
-                {
-                    PayId = _rng.Next(_basePayId, _basePayId + _uniquePayIds),
-                    PaymentAmount = Convert.ToDecimal(_rng.Next(1, 10000))/100M,
-                    Category = cv
-                };
+                         {
+                             PayId = _rng.Next(_basePayId, _basePayId + _uniquePayIds),
+                             PaymentAmount = Convert.ToDecimal(_rng.Next(1, 10000))/100M,
+                             Category = cv
+                         };
 
                 _bigList.Add(pr);
             }
@@ -73,27 +73,33 @@ namespace LinqExamples
                     var payids = _myLookup.Select(g => g.Key);
 
                     var myStuff = (from payid in payids
-                        select new
-                        {
-                            PayId = payid,
-                            coverages = string.Join(",", _myLookup[payid].Select(x => x.Category).Distinct()),
-                            total = _myLookup[payid].Select(x => x.PaymentAmount).Sum()
-                        }).ToList();
+                                   select new
+                                          {
+                                              PayId = payid,
+                                              coverages =
+                                                  string.Join(",", _myLookup[payid].Select(x => x.Category).Distinct()),
+                                              total = _myLookup[payid].Select(x => x.PaymentAmount).Sum()
+                                          }).ToList();
                 }),
                 "serial without lookup", (() =>
                 {
                     var payids = (from payment in _bigList
-                        select payment.PayId).Distinct();
+                                  select payment.PayId).Distinct();
 
                     var myStuff = (from payid in payids
-                        select new
-                        {
-                            PayId = payid,
-                            coverages =
-                                string.Join(", ",
-                                    _bigList.Where(x => x.PayId == payid).Select(x => x.Category).Distinct()),
-                            total = _bigList.Where(x => x.PayId == payid).Select(x => x.PaymentAmount).Sum()
-                        }).ToList();
+                                   select new
+                                          {
+                                              PayId = payid,
+                                              coverages =
+                                                  string.Join(", ",
+                                                      _bigList.Where(x => x.PayId == payid)
+                                                              .Select(x => x.Category)
+                                                              .Distinct()),
+                                              total =
+                                                  _bigList.Where(x => x.PayId == payid)
+                                                          .Select(x => x.PaymentAmount)
+                                                          .Sum()
+                                          }).ToList();
                 }),
                 0.0, TwoSampleHypothesis.FirstValueIsSmallerThanSecond, true);
 
@@ -112,27 +118,33 @@ namespace LinqExamples
                     var payids = _myLookup.Select(g => g.Key);
 
                     var myStuff = (from payid in payids.AsParallel()
-                        select new
-                        {
-                            PayId = payid,
-                            coverages = string.Join(",", _myLookup[payid].Select(x => x.Category).Distinct()),
-                            total = _myLookup[payid].Select(x => x.PaymentAmount).Sum()
-                        }).ToList();
+                                   select new
+                                          {
+                                              PayId = payid,
+                                              coverages =
+                                                  string.Join(",", _myLookup[payid].Select(x => x.Category).Distinct()),
+                                              total = _myLookup[payid].Select(x => x.PaymentAmount).Sum()
+                                          }).ToList();
                 }),
                 "parallel without Lookup", (() =>
                 {
                     var payids = (from payment in _bigList
-                        select payment.PayId).Distinct();
+                                  select payment.PayId).Distinct();
 
                     var myStuff = (from payid in payids.AsParallel()
-                        select new
-                        {
-                            PayId = payid,
-                            coverages =
-                                string.Join(", ",
-                                    _bigList.Where(x => x.PayId == payid).Select(x => x.Category).Distinct()),
-                            total = _bigList.Where(x => x.PayId == payid).Select(x => x.PaymentAmount).Sum()
-                        }).ToList();
+                                   select new
+                                          {
+                                              PayId = payid,
+                                              coverages =
+                                                  string.Join(", ",
+                                                      _bigList.Where(x => x.PayId == payid)
+                                                              .Select(x => x.Category)
+                                                              .Distinct()),
+                                              total =
+                                                  _bigList.Where(x => x.PayId == payid)
+                                                          .Select(x => x.PaymentAmount)
+                                                          .Sum()
+                                          }).ToList();
                 }),
                 0.0, TwoSampleHypothesis.FirstValueIsSmallerThanSecond, true);
 
@@ -151,27 +163,33 @@ namespace LinqExamples
                     var payids = _myLookup.Select(g => g.Key);
 
                     var myStuff = (from payid in payids
-                        select new
-                        {
-                            PayId = payid,
-                            coverages = string.Join(",", _myLookup[payid].Select(x => x.Category).Distinct()),
-                            total = _myLookup[payid].Select(x => x.PaymentAmount).Sum()
-                        }).ToList();
+                                   select new
+                                          {
+                                              PayId = payid,
+                                              coverages =
+                                                  string.Join(",", _myLookup[payid].Select(x => x.Category).Distinct()),
+                                              total = _myLookup[payid].Select(x => x.PaymentAmount).Sum()
+                                          }).ToList();
                 }),
                 "parallel without lookup", (() =>
                 {
                     var payids = (from payment in _bigList
-                        select payment.PayId).Distinct();
+                                  select payment.PayId).Distinct();
 
                     var myStuff = (from payid in payids.AsParallel()
-                        select new
-                        {
-                            PayId = payid,
-                            coverages =
-                                string.Join(", ",
-                                    _bigList.Where(x => x.PayId == payid).Select(x => x.Category).Distinct()),
-                            total = _bigList.Where(x => x.PayId == payid).Select(x => x.PaymentAmount).Sum()
-                        }).ToList();
+                                   select new
+                                          {
+                                              PayId = payid,
+                                              coverages =
+                                                  string.Join(", ",
+                                                      _bigList.Where(x => x.PayId == payid)
+                                                              .Select(x => x.Category)
+                                                              .Distinct()),
+                                              total =
+                                                  _bigList.Where(x => x.PayId == payid)
+                                                          .Select(x => x.PaymentAmount)
+                                                          .Sum()
+                                          }).ToList();
                 }),
                 0.0, TwoSampleHypothesis.FirstValueIsSmallerThanSecond, true);
 

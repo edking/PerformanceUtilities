@@ -1,36 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace PerformanceUtilities.Analysis.Distributions
 {
     /// <summary>
-    ///   Set of special mathematic functions.
+    ///     Set of special mathematic functions.
     /// </summary>
-    ///  
     /// <remarks>
-    ///   References:
-    ///   <list type="bullet">
-    ///     <item><description>
-    ///       Cephes Math Library, http://www.netlib.org/cephes/ </description></item>
-    ///     <item><description>
-    ///       John D. Cook, http://www.johndcook.com/ </description></item>
-    ///   </list>
+    ///     References:
+    ///     <list type="bullet">
+    ///         <item>
+    ///             <description>
+    ///                 Cephes Math Library, http://www.netlib.org/cephes/
+    ///             </description>
+    ///         </item>
+    ///         <item>
+    ///             <description>
+    ///                 John D. Cook, http://www.johndcook.com/
+    ///             </description>
+    ///         </item>
+    ///     </list>
     /// </remarks>
-    /// 
     public static class Special
     {
-
-
         /// <summary>
-        ///   Complementary error function of the specified value.
+        ///     Complementary error function of the specified value.
         /// </summary>
-        /// 
         /// <remarks>
-        ///   http://mathworld.wolfram.com/Erfc.html
+        ///     http://mathworld.wolfram.com/Erfc.html
         /// </remarks>
-        /// 
         public static double Erfc(double value)
         {
             double x, y, z, p, q;
@@ -46,7 +43,7 @@ namespace PerformanceUtilities.Analysis.Distributions
                 9.34528527171957607540E2,
                 1.02755188689515710272E3,
                 5.57535335369399327526E2
-			};
+            };
             double[] Q =
             {
                 1.32281951154744992508E1,
@@ -57,7 +54,7 @@ namespace PerformanceUtilities.Analysis.Distributions
                 2.24633760818710981792E3,
                 1.65666309194161350182E3,
                 5.57535340817727675546E2
-			};
+            };
 
             double[] R =
             {
@@ -67,7 +64,7 @@ namespace PerformanceUtilities.Analysis.Distributions
                 6.16021097993053585195E0,
                 7.40974269950448939160E0,
                 2.97886665372100240670E0
-			};
+            };
             double[] S =
             {
                 2.26052863220117276590E0,
@@ -76,22 +73,22 @@ namespace PerformanceUtilities.Analysis.Distributions
                 1.70814450747565897222E1,
                 9.60896809063285878198E0,
                 3.36907645100081516050E0
-			};
+            };
 
             if (value < 0.0) x = -value;
             else x = value;
 
             if (x < 1.0) return 1.0 - Erf(value);
 
-            z = -value * value;
+            z = -value*value;
 
             if (z < -Constants.LogMax)
             {
                 if (value < 0) return (2.0);
-                else return (0.0);
+                return (0.0);
             }
 
-            z = System.Math.Exp(z);
+            z = Math.Exp(z);
 
             if (x < 8.0)
             {
@@ -104,14 +101,14 @@ namespace PerformanceUtilities.Analysis.Distributions
                 q = P1evl(x, S, 6);
             }
 
-            y = (z * p) / q;
+            y = (z*p)/q;
 
             if (value < 0) y = 2.0 - y;
 
             if (y == 0.0)
             {
                 if (value < 0) return 2.0;
-                else return (0.0);
+                return (0.0);
             }
 
 
@@ -119,9 +116,8 @@ namespace PerformanceUtilities.Analysis.Distributions
         }
 
         /// <summary>
-        ///   Error function of the specified value.
+        ///     Error function of the specified value.
         /// </summary>
-        /// 
         public static double Erf(double x)
         {
             double y, z;
@@ -132,7 +128,7 @@ namespace PerformanceUtilities.Analysis.Distributions
                 2.23200534594684319226E3,
                 7.00332514112805075473E3,
                 5.55923013010394962768E4
-		    };
+            };
             double[] U =
             {
                 3.35617141647503099647E1,
@@ -140,46 +136,43 @@ namespace PerformanceUtilities.Analysis.Distributions
                 4.59432382970980127987E3,
                 2.26290000613890934246E4,
                 4.92673942608635921086E4
-		    };
+            };
 
-            if (System.Math.Abs(x) > 1.0)
+            if (Math.Abs(x) > 1.0)
                 return (1.0 - Erfc(x));
 
-            z = x * x;
-            y = x * Polevl(z, T, 4) / P1evl(z, U, 5);
+            z = x*x;
+            y = x*Polevl(z, T, 4)/P1evl(z, U, 5);
 
             return y;
         }
 
         /// <summary>
-        ///   Inverse error function (<see cref="Erf(double)"/>.
+        ///     Inverse error function (<see cref="Erf(double)" />.
         /// </summary>
-        /// 
         public static double Ierf(double y)
         {
-            double s = Normal.Inverse(0.5 * y + 0.5);
-            double r = s * Math.Sqrt(2) / 2.0;
+            double s = Normal.Inverse(0.5*y + 0.5);
+            double r = s*Math.Sqrt(2)/2.0;
             return r;
         }
 
 
         /// <summary>
-        ///   Inverse complemented error function (<see cref="Erfc(double)"/>.
+        ///     Inverse complemented error function (<see cref="Erfc(double)" />.
         /// </summary>
-        /// 
         public static double Ierfc(double y)
         {
-            double s = Normal.Inverse(-0.5 * y + 1);
-            double r = s * Math.Sqrt(2) / 2.0;
+            double s = Normal.Inverse(-0.5*y + 1);
+            double r = s*Math.Sqrt(2)/2.0;
             return r;
         }
 
-
         #region Polynomial and spline functions
+
         /// <summary>
-        ///   Evaluates polynomial of degree N
+        ///     Evaluates polynomial of degree N
         /// </summary>
-        /// 
         public static double Polevl(double x, double[] coef, int n)
         {
             double ans;
@@ -187,15 +180,14 @@ namespace PerformanceUtilities.Analysis.Distributions
             ans = coef[0];
 
             for (int i = 1; i <= n; i++)
-                ans = ans * x + coef[i];
+                ans = ans*x + coef[i];
 
             return ans;
         }
 
         /// <summary>
-        ///   Evaluates polynomial of degree N with assumption that coef[N] = 1.0
+        ///     Evaluates polynomial of degree N with assumption that coef[N] = 1.0
         /// </summary>
-        /// 
         public static double P1evl(double x, double[] coef, int n)
         {
             double ans;
@@ -203,23 +195,22 @@ namespace PerformanceUtilities.Analysis.Distributions
             ans = x + coef[0];
 
             for (int i = 1; i < n; i++)
-                ans = ans * x + coef[i];
+                ans = ans*x + coef[i];
 
             return ans;
         }
 
         /// <summary>
-        ///   Truncated power function.
+        ///     Truncated power function.
         /// </summary>
-        /// 
         public static double TruncatedPower(double value, double degree)
         {
-            double x = System.Math.Pow(value, degree);
+            double x = Math.Pow(value, degree);
             return (x > 0) ? x : 0.0;
         }
 
         /// <summary>
-        ///   Computes the Basic Spline of order <c>n</c>
+        ///     Computes the Basic Spline of order <c>n</c>
         /// </summary>
         public static double BSpline(int n, double x)
         {
@@ -230,80 +221,79 @@ namespace PerformanceUtilities.Analysis.Distributions
                 throw new ArgumentOutOfRangeException("n");
 
 
-            double a = 1.0 / Special.Factorial(n);
+            double a = 1.0/Factorial(n);
             double c;
 
             bool positive = true;
             for (int k = 0; k <= n + 1; k++)
             {
-                c = Binomial(n + 1, k) * TruncatedPower(x + (n + 1.0) / 2.0 - k, n);
+                c = Binomial(n + 1, k)*TruncatedPower(x + (n + 1.0)/2.0 - k, n);
                 a += positive ? c : -c;
                 positive = !positive;
             }
 
             return a;
         }
+
         #endregion
 
         #region Factorial and related functions
+
+        private static int ftop;
+        private static double[] fcache;
+        private static double[] lnfcache;
+
         /// <summary>
-        ///   Computes the binomial coefficients C(n,k).
+        ///     Computes the binomial coefficients C(n,k).
         /// </summary>
-        /// 
         public static double Binomial(int n, int k)
         {
             return Math.Round(Math.Exp(LogFactorial(n) - LogFactorial(k) - LogFactorial(n - k)));
         }
 
         /// <summary>
-        ///   Computes the binomial coefficients C(n,k).
+        ///     Computes the binomial coefficients C(n,k).
         /// </summary>
-        /// 
         public static double Binomial(double n, double k)
         {
             return Math.Round(Math.Exp(LogFactorial(n) - LogFactorial(k) - LogFactorial(n - k)));
         }
 
         /// <summary>
-        ///   Computes the log binomial Coefficients Log[C(n,k)].
+        ///     Computes the log binomial Coefficients Log[C(n,k)].
         /// </summary>
-        /// 
         public static double LogBinomial(int n, int k)
         {
             return LogFactorial(n) - LogFactorial(k) - LogFactorial(n - k);
         }
 
         /// <summary>
-        ///   Computes the log binomial Coefficients Log[C(n,k)].
+        ///     Computes the log binomial Coefficients Log[C(n,k)].
         /// </summary>
-        /// 
         public static double LogBinomial(double n, double k)
         {
             return LogFactorial(n) - LogFactorial(k) - LogFactorial(n - k);
         }
 
         /// <summary>
-        ///   Returns the extended factorial definition of a real number.
+        ///     Returns the extended factorial definition of a real number.
         /// </summary>
-        /// 
         public static double Factorial(double n)
         {
             return Gamma.Function(n + 1.0);
         }
 
         /// <summary>
-        ///   Returns the log factorial of a number (ln(n!))
+        ///     Returns the log factorial of a number (ln(n!))
         /// </summary>
-        /// 
         public static double LogFactorial(double n)
         {
             return Gamma.Log(n + 1.0);
         }
 
         /// <summary>
-        ///   Returns the log factorial of a number (ln(n!))
+        ///     Returns the log factorial of a number (ln(n!))
         /// </summary>
-        /// 
         public static double LogFactorial(int n)
         {
             if (lnfcache == null)
@@ -325,15 +315,12 @@ namespace PerformanceUtilities.Analysis.Distributions
                 // if the value has been previously computed.
                 return (lnfcache[n] > 0) ? lnfcache[n] : (lnfcache[n] = Gamma.Log(n + 1.0));
             }
-            else
-            {
-                // Just compute the factorial using ln(gamma(n)) approximation.
-                return Gamma.Log(n + 1.0);
-            }
+            // Just compute the factorial using ln(gamma(n)) approximation.
+            return Gamma.Log(n + 1.0);
         }
 
         /// <summary>
-        ///   Computes the factorial of a number (n!)
+        ///     Computes the factorial of a number (n!)
         /// </summary>
         public static double Factorial(int n)
         {
@@ -341,9 +328,12 @@ namespace PerformanceUtilities.Analysis.Distributions
             {
                 // Initialize factorial cache
                 fcache = new double[33];
-                fcache[0] = 1; fcache[1] = 1;
-                fcache[2] = 2; fcache[3] = 6;
-                fcache[4] = 24; ftop = 4;
+                fcache[0] = 1;
+                fcache[1] = 1;
+                fcache[2] = 2;
+                fcache[3] = 6;
+                fcache[4] = 24;
+                ftop = 4;
             }
 
             if (n < 0)
@@ -357,32 +347,25 @@ namespace PerformanceUtilities.Analysis.Distributions
                 //  which for some reason is faster than gamma(n+1).
                 return Math.Exp(Gamma.Log(n + 1.0));
             }
-            else
+            // Compute in the standard way, but use the
+            //  factorial cache to speed up computations.
+            while (ftop < n)
             {
-                // Compute in the standard way, but use the
-                //  factorial cache to speed up computations.
-                while (ftop < n)
-                {
-                    int j = ftop++;
-                    fcache[ftop] = fcache[j] * ftop;
-                }
-                return fcache[n];
+                int j = ftop++;
+                fcache[ftop] = fcache[j]*ftop;
             }
+            return fcache[n];
         }
 
         // factorial function caches
-        private static int ftop;
-        private static double[] fcache;
-        private static double[] lnfcache;
-        #endregion
 
+        #endregion
 
         #region Utility functions
 
         /// <summary>
-        ///   Computes log(1-x) without losing precision for small values of x.
+        ///     Computes log(1-x) without losing precision for small values of x.
         /// </summary>
-        /// 
         public static double Log1m(double x)
         {
             if (x >= 1.0)
@@ -393,18 +376,16 @@ namespace PerformanceUtilities.Analysis.Distributions
 
             // Use Taylor approx. log(1 + x) = x - x^2/2 with error roughly x^3/3
             // Since |x| < 10^-4, |x|^3 < 10^-12, relative error less than 10^-8
-            return -(0.5 * x + 1.0) * x;
+            return -(0.5*x + 1.0)*x;
         }
 
         /// <summary>
-        ///   Computes log(1+x) without losing precision for small values of x.
+        ///     Computes log(1+x) without losing precision for small values of x.
         /// </summary>
-        /// 
         /// <remarks>
-        ///   References:
-        ///   - http://www.johndcook.com/csharp_log_one_plus_x.html
+        ///     References:
+        ///     - http://www.johndcook.com/csharp_log_one_plus_x.html
         /// </remarks>
-        /// 
         public static double Log1p(double x)
         {
             if (x <= -1.0)
@@ -415,29 +396,28 @@ namespace PerformanceUtilities.Analysis.Distributions
 
             // Use Taylor approx. log(1 + x) = x - x^2/2 with error roughly x^3/3
             // Since |x| < 10^-4, |x|^3 < 10^-12, relative error less than 10^-8
-            return (-0.5 * x + 1.0) * x;
+            return (-0.5*x + 1.0)*x;
         }
 
         /// <summary>
-        ///   Compute exp(x) - 1 without loss of precision for small values of x.
+        ///     Compute exp(x) - 1 without loss of precision for small values of x.
         /// </summary>
         /// <remarks>
-        ///   References:
-        ///   - http://www.johndcook.com/cpp_expm1.html
+        ///     References:
+        ///     - http://www.johndcook.com/cpp_expm1.html
         /// </remarks>
         public static double Expm1(double x)
         {
             if (Math.Abs(x) < 1e-5)
-                return x + 0.5 * x * x;
-            else
-                return Math.Exp(x) - 1.0;
+                return x + 0.5*x*x;
+            return Math.Exp(x) - 1.0;
         }
 
         /// <summary>
-        ///   Estimates unit round-off in quantities of size x.
+        ///     Estimates unit round-off in quantities of size x.
         /// </summary>
         /// <remarks>
-        ///   This is a port of the epslon function from EISPACK.
+        ///     This is a port of the epslon function from EISPACK.
         /// </remarks>
         public static double Epslon(double x)
         {
@@ -445,27 +425,24 @@ namespace PerformanceUtilities.Analysis.Distributions
 
             a = 1.3333333333333333;
 
-        L10:
+            L10:
             b = a - 1.0;
             c = b + b + b;
-            eps = System.Math.Abs(c - 1.0);
+            eps = Math.Abs(c - 1.0);
 
             if (eps == 0.0) goto L10;
 
-            return eps * System.Math.Abs(x);
+            return eps*Math.Abs(x);
         }
 
         /// <summary>
-        ///   Returns <paramref name="a"/> with the sign of <paramref name="b"/>. 
+        ///     Returns <paramref name="a" /> with the sign of <paramref name="b" />.
         /// </summary>
-        /// 
         /// <remarks>
-        ///   This is a port of the sign transfer function from EISPACK,
-        ///   and is is equivalent to C++'s std::copysign function.
+        ///     This is a port of the sign transfer function from EISPACK,
+        ///     and is is equivalent to C++'s std::copysign function.
         /// </remarks>
-        /// 
         /// <returns>If B > 0 then the result is ABS(A), else it is -ABS(A).</returns>
-        /// 
         public static double Sign(double a, double b)
         {
             double x = (a >= 0 ? a : -a);
@@ -473,9 +450,8 @@ namespace PerformanceUtilities.Analysis.Distributions
         }
 
         /// <summary>
-        ///   Computes x + y without losing precision using ln(x) and ln(y).
+        ///     Computes x + y without losing precision using ln(x) and ln(y).
         /// </summary>
-        /// 
         public static double LogDiff(double lna, double lnc)
         {
             if (lna > lnc)
@@ -485,9 +461,8 @@ namespace PerformanceUtilities.Analysis.Distributions
         }
 
         /// <summary>
-        ///   Computes x + y without losing precision using ln(x) and ln(y).
+        ///     Computes x + y without losing precision using ln(x) and ln(y).
         /// </summary>
-        /// 
         public static double LogSum(double lna, double lnc)
         {
             if (lna == Double.NegativeInfinity)
@@ -496,15 +471,14 @@ namespace PerformanceUtilities.Analysis.Distributions
                 return lna;
 
             if (lna > lnc)
-                return lna + Special.Log1p(Math.Exp(lnc - lna));
+                return lna + Log1p(Math.Exp(lnc - lna));
 
-            return lnc + Special.Log1p(Math.Exp(lna - lnc));
+            return lnc + Log1p(Math.Exp(lna - lnc));
         }
 
         /// <summary>
-        ///   Computes x + y without losing precision using ln(x) and ln(y).
+        ///     Computes x + y without losing precision using ln(x) and ln(y).
         /// </summary>
-        /// 
         public static double LogSum(float lna, float lnc)
         {
             if (lna == Single.NegativeInfinity)
@@ -513,157 +487,142 @@ namespace PerformanceUtilities.Analysis.Distributions
                 return lna;
 
             if (lna > lnc)
-                return lna + Special.Log1p(Math.Exp(lnc - lna));
+                return lna + Log1p(Math.Exp(lnc - lna));
 
-            return lnc + Special.Log1p(Math.Exp(lna - lnc));
+            return lnc + Log1p(Math.Exp(lna - lnc));
         }
-
 
         #endregion
 
-
         #region Derived trigonometric functions
+
         //
         // http://msdn.microsoft.com/en-us/library/w3t84e33.aspx
 
         /// <summary>
-        ///   Secant.
+        ///     Secant.
         /// </summary>
-        /// 
         public static double Sec(double x)
         {
-            return 1 / Math.Cos(x);
+            return 1/Math.Cos(x);
         }
 
         /// <summary>
-        ///   Cosecant.
+        ///     Cosecant.
         /// </summary>
-        /// 
         public static double Cosec(double x)
         {
-            return 1 / Math.Sin(x);
+            return 1/Math.Sin(x);
         }
 
         /// <summary>
-        ///   Cotangent.
+        ///     Cotangent.
         /// </summary>
         public static double Cotan(double x)
         {
-            return 1 / Math.Tan(x);
+            return 1/Math.Tan(x);
         }
 
         /// <summary>
-        ///   Inverse secant.
+        ///     Inverse secant.
         /// </summary>
-        /// 
         public static double Asec(double x)
         {
-            double u = x * x - 1;
-            return 2 * Math.Atan(1) - Math.Atan2(Math.Sign(x), u * u);
+            double u = x*x - 1;
+            return 2*Math.Atan(1) - Math.Atan2(Math.Sign(x), u*u);
         }
 
         /// <summary>
-        ///   Inverse cosecant.
+        ///     Inverse cosecant.
         /// </summary>
-        /// 
         public static double Acosec(double x)
         {
-            double u = x * x - 1;
-            return Math.Atan2(Math.Sign(x), u * u);
+            double u = x*x - 1;
+            return Math.Atan2(Math.Sign(x), u*u);
         }
 
         /// <summary>
-        ///   Inverse cotangent.
+        ///     Inverse cotangent.
         /// </summary>
-        /// 
         public static double Acotan(double x)
         {
-            return 2 * Math.Atan(1) - Math.Atan(x);
+            return 2*Math.Atan(1) - Math.Atan(x);
         }
 
         /// <summary>
-        ///   Hyperbolic secant.
+        ///     Hyperbolic secant.
         /// </summary>
-        /// 
         public static double Sech(double x)
         {
-            return 2 / (Math.Exp(x) + Math.Exp(-x));
+            return 2/(Math.Exp(x) + Math.Exp(-x));
         }
 
         /// <summary>
-        ///   Hyperbolic secant.
+        ///     Hyperbolic secant.
         /// </summary>
-        /// 
         public static double Cosech(double x)
         {
-            return 2 / (Math.Exp(x) - Math.Exp(-x));
+            return 2/(Math.Exp(x) - Math.Exp(-x));
         }
 
         /// <summary>
-        ///   Hyperbolic cotangent.
+        ///     Hyperbolic cotangent.
         /// </summary>
-        /// 
         public static double Cotanh(double x)
         {
-            return (Math.Exp(x) + Math.Exp(-x)) / (Math.Exp(x) - Math.Exp(-x));
+            return (Math.Exp(x) + Math.Exp(-x))/(Math.Exp(x) - Math.Exp(-x));
         }
 
         /// <summary>
-        ///   Inverse hyperbolic sin.
+        ///     Inverse hyperbolic sin.
         /// </summary>
-        /// 
         public static double Asinh(double x)
         {
-            double u = x * x + 1;
-            return Math.Log(x + u * u);
+            double u = x*x + 1;
+            return Math.Log(x + u*u);
         }
 
         /// <summary>
-        ///   Inverse hyperbolic cos.
+        ///     Inverse hyperbolic cos.
         /// </summary>
-        /// 
         public static double Acosh(double x)
         {
-            double u = x * x - 1;
-            return Math.Log(x + u * u);
+            double u = x*x - 1;
+            return Math.Log(x + u*u);
         }
 
         /// <summary>
-        ///   Inverse hyperbolic tangent.
+        ///     Inverse hyperbolic tangent.
         /// </summary>
-        /// 
         public static double Atanh(double x)
         {
-            return Math.Log((1 + x) / (1 - x)) / 2;
+            return Math.Log((1 + x)/(1 - x))/2;
         }
 
         /// <summary>
-        ///   Inverse hyperbolic secant.
+        ///     Inverse hyperbolic secant.
         /// </summary>
-        /// 
         public static double Asech(double x)
         {
-            double u = -x * x + 1;
-            return Math.Log((u * u + 1) / x);
+            double u = -x*x + 1;
+            return Math.Log((u*u + 1)/x);
         }
 
         /// <summary>
-        ///   Inverse hyperbolic cosecant.
+        ///     Inverse hyperbolic cosecant.
         /// </summary>
-        /// 
         public static double Acosech(double x)
         {
-            double u = x * x + 1;
-            return Math.Log((Math.Sign(x) * u * u + 1) / x);
+            double u = x*x + 1;
+            return Math.Log((Math.Sign(x)*u*u + 1)/x);
         }
 
         /// <summary>
-        ///   Inverse hyperbolic cotangent.
+        ///     Inverse hyperbolic cotangent.
         /// </summary>
-        /// 
         public static double Acotanh(double x)
         {
-            return Math.Log((x + 1) / (x - 1)) / 2;
+            return Math.Log((x + 1)/(x - 1))/2;
         }
 
         #endregion

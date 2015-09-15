@@ -33,19 +33,16 @@ namespace PerformanceUtilities.TestPatterns
             double hypothesizedDifference = 0, TwoSampleHypothesis hypothesis = TwoSampleHypothesis.ValuesAreDifferent,
             bool outputDetails = false)
         {
-            var result1 = RunPerformanceTest(numIterations, firstOperation);
-            var result2 = RunPerformanceTest(numIterations, secondOperation);
-            var comparison = new GeneralHypothesisTest(firstLabel, result1.DescriptiveResult, secondLabel,
-                result2.DescriptiveResult,
+            var comparison = RunPerformanceComparison(numIterations, firstLabel, firstOperation, secondLabel, secondOperation,
                 hypothesizedDifference, hypothesis);
 
             if (outputDetails)
             {
                 Console.WriteLine(comparison.ToString());
-                Console.WriteLine("-----------------------------{0}--------------------------------------", firstLabel);
-                Console.WriteLine(result1.ToString());
-                Console.WriteLine("-----------------------------{0}--------------------------------------", secondLabel);
-                Console.WriteLine(result2.ToString());
+                Console.WriteLine("-----{0}-----", firstLabel);
+                Console.WriteLine(comparison.FirstSample.Details.ToString());
+                Console.WriteLine("-----{0}-----", secondLabel);
+                Console.WriteLine(comparison.SecondSample.Details.ToString());
             }
 
             return comparison.Significant;
@@ -56,22 +53,52 @@ namespace PerformanceUtilities.TestPatterns
             Action firstOperation, string secondLabel, Action secondOperation, double hypothesizedDifference = 0,
             TwoSampleHypothesis hypothesis = TwoSampleHypothesis.ValuesAreDifferent, bool outputDetails = false)
         {
+            var comparison =  RunConcurrentPerformanceComparison(numIterations, degreeParallelism, firstLabel, firstOperation,
+                secondLabel, secondOperation, hypothesizedDifference, hypothesis);
+
+            if (outputDetails)
+            {
+                Console.WriteLine(comparison.ToString());
+                Console.WriteLine("-----{0}-----", firstLabel);
+                Console.WriteLine(comparison.FirstSample.Details.ToString());
+                Console.WriteLine("-----{0}-----", secondLabel);
+                Console.WriteLine(comparison.SecondSample.Details.ToString());
+            }
+
+            return comparison.Significant;
+        }
+
+        public static ComparisonResult RunPerformanceComparison(int numIterations, string firstLabel,
+            Action firstOperation,
+            string secondLabel, Action secondOperation,
+            double hypothesizedDifference = 0, TwoSampleHypothesis hypothesis = TwoSampleHypothesis.ValuesAreDifferent)
+        {
+            var result1 = RunPerformanceTest(numIterations, firstOperation);
+            var result2 = RunPerformanceTest(numIterations, secondOperation);
+            var comparison = new GeneralHypothesisTest(firstLabel, result1.DescriptiveResult, secondLabel,
+                result2.DescriptiveResult,
+                hypothesizedDifference, hypothesis);
+            comparison.Result.FirstSample.Details = result1;
+            comparison.Result.SecondSample.Details = result2;
+
+            return comparison.Result;
+        }
+
+        public static ComparisonResult RunConcurrentPerformanceComparison(int numIterations, int degreeParallelism,
+            string firstLabel,
+            Action firstOperation, string secondLabel, Action secondOperation, double hypothesizedDifference = 0,
+            TwoSampleHypothesis hypothesis = TwoSampleHypothesis.ValuesAreDifferent)
+        {
             var result1 = RunConcurrentPerformanceTest(numIterations, degreeParallelism, firstOperation);
             var result2 = RunConcurrentPerformanceTest(numIterations, degreeParallelism, secondOperation);
             var comparison = new GeneralHypothesisTest(firstLabel, result1.DescriptiveResult, secondLabel,
                 result2.DescriptiveResult,
                 hypothesizedDifference, hypothesis);
 
-            if (outputDetails)
-            {
-                Console.WriteLine(comparison.ToString());
-                Console.WriteLine("-----------------------------{0}--------------------------------------", firstLabel);
-                Console.WriteLine(result1.ToString());
-                Console.WriteLine("-----------------------------{0}--------------------------------------", secondLabel);
-                Console.WriteLine(result2.ToString());
-            }
+            comparison.Result.FirstSample.Details = result1;
+            comparison.Result.SecondSample.Details = result2;
 
-            return comparison.Significant;
+            return comparison.Result;
         }
 
         public static PerformanceResult RunConcurrentPerformanceTest(int numIterations, int degreeParallelism,
@@ -105,15 +132,15 @@ namespace PerformanceUtilities.TestPatterns
             desc.AnalyzeHistogram(cHistogramBuckets);
 
             var res = new PerformanceResult
-            {
-                IsValid = true,
-                Iterations = taskList.Sum(p => p.Result.Iterations),
-                DegreeOfParallelism = degreeParallelism,
-                TotalMilliseconds = ConvertToMs(startTime, stopTime),
-                TotalSeconds = ConvertToSeconds(startTime, stopTime),
-                TotalTicks = stopTime - startTime,
-                DescriptiveResult = desc.Result
-            };
+                      {
+                          IsValid = true,
+                          Iterations = taskList.Sum(p => p.Result.Iterations),
+                          DegreeOfParallelism = degreeParallelism,
+                          TotalMilliseconds = ConvertToMs(startTime, stopTime),
+                          TotalSeconds = ConvertToSeconds(startTime, stopTime),
+                          TotalTicks = stopTime - startTime,
+                          DescriptiveResult = desc.Result
+                      };
 
             for (i = 0; i < degreeParallelism; i++) taskList[i].Dispose();
 
@@ -146,15 +173,15 @@ namespace PerformanceUtilities.TestPatterns
             if (!isParallel) descriptive.AnalyzeHistogram(cHistogramBuckets);
 
             return new PerformanceResult
-            {
-                IsValid = true,
-                Iterations = numIterations,
-                DegreeOfParallelism = 1,
-                TotalSeconds = ConvertToSeconds(startTime, stopTime),
-                TotalMilliseconds = ConvertToMs(startTime, stopTime),
-                TotalTicks = (stopTime - startTime),
-                DescriptiveResult = descriptive.Result
-            };
+                   {
+                       IsValid = true,
+                       Iterations = numIterations,
+                       DegreeOfParallelism = 1,
+                       TotalSeconds = ConvertToSeconds(startTime, stopTime),
+                       TotalMilliseconds = ConvertToMs(startTime, stopTime),
+                       TotalTicks = (stopTime - startTime),
+                       DescriptiveResult = descriptive.Result
+                   };
         }
 
         public static PerformanceResult RunConcurrentPerformanceTest(int numIterations, int degreeParallelism,
@@ -189,13 +216,13 @@ namespace PerformanceUtilities.TestPatterns
             desc.AnalyzeHistogram(cHistogramBuckets);
 
             var res = new PerformanceResult
-            {
-                IsValid = valid,
-                TotalMilliseconds = taskList.Max(p => p.Result.TotalMilliseconds),
-                TotalSeconds = taskList.Max(p => p.Result.TotalSeconds),
-                TotalTicks = taskList.Max(p => p.Result.TotalTicks),
-                DescriptiveResult = desc.Result
-            };
+                      {
+                          IsValid = valid,
+                          TotalMilliseconds = taskList.Max(p => p.Result.TotalMilliseconds),
+                          TotalSeconds = taskList.Max(p => p.Result.TotalSeconds),
+                          TotalTicks = taskList.Max(p => p.Result.TotalTicks),
+                          DescriptiveResult = desc.Result
+                      };
 
             for (i = 0; i < degreeParallelism; i++) taskList[i].Dispose();
 
@@ -231,13 +258,13 @@ namespace PerformanceUtilities.TestPatterns
             // If they all worked, we can report a valid result.
             // If they didn't then we call the perf test inconclusive.
             return new PerformanceResult
-            {
-                IsValid = isResultValid,
-                TotalSeconds = ConvertToSeconds(startTime, stopTime),
-                TotalMilliseconds = ConvertToMs(startTime, stopTime),
-                TotalTicks = (stopTime - startTime),
-                DescriptiveResult = descriptive.Result
-            };
+                   {
+                       IsValid = isResultValid,
+                       TotalSeconds = ConvertToSeconds(startTime, stopTime),
+                       TotalMilliseconds = ConvertToMs(startTime, stopTime),
+                       TotalTicks = (stopTime - startTime),
+                       DescriptiveResult = descriptive.Result
+                   };
         }
 
         public static double ConvertToMs(long start, long stop)
