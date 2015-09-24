@@ -68,7 +68,7 @@ namespace PerformanceUtilities.Analysis
             Result.Variance = Result.SumOfErrorSquare/((double) Result.Count - 1);
             Result.StdDev = Math.Sqrt(Result.Variance);
 
-            double skewCum = _data.Sum(t => Math.Pow((t - Result.Mean), 3)) / Result.Count;
+            double skewCum = _data.Sum(t => Math.Pow((t - Result.Mean), 3))/Result.Count;
             Result.Skew = ((Result.Count*Result.Count)/((Result.Count - 1)*(Result.Count - 2)))*
                           (skewCum/Math.Pow(Result.StdDev, 3));
 
@@ -105,11 +105,11 @@ namespace PerformanceUtilities.Analysis
             while (val <= Result.Max)
             {
                 var thisBucket = new Bucket
-                {
-                    RangeLow = val,
-                    RangeHigh = val + step,
-                    Count = _data.Count(p => p > val && p <= (val + step))
-                };
+                                 {
+                                     RangeLow = val,
+                                     RangeHigh = val + step,
+                                     Count = _data.Count(p => p > val && p <= (val + step))
+                                 };
                 Result.Histogram.Add(thisBucket);
                 val += step;
             }
